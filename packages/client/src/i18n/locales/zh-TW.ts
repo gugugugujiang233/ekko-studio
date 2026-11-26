@@ -1750,6 +1750,27 @@ export default {
 
   // 看板
   kanban: {
+    compact: {
+      table: "問題表格",
+      full: "完整看板",
+      active: "未完成",
+      all: "全部",
+      search: "搜尋問題",
+      status: "狀態",
+      count: "{count} 個問題",
+      project: "專案",
+      issue: "問題",
+      gate: "還差什麼",
+      pr: "PR",
+      error: "問題載入失敗。",
+      retry: "重試",
+      loading: "正在載入問題…",
+      unavailable: "部分關聯暫不可用，相關記錄保持獨立。",
+      records: "{count} 筆原始記錄",
+      record: "原始記錄 {index}",
+      empty: "沒有符合條件的問題。",
+    },
+
     title: '看板',
     createTask: '新增任務',
     noTasks: '目前無任務',

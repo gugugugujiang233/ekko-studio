@@ -397,6 +397,27 @@ export default {
     deleteProfileTitle: '프로필을 삭제할까요?', deleteProfileWarning: '관리 데이터는 휴지통으로 이동하며 사용자 지정 경로는 유지됩니다.', clearCache: '캐시 지우기', clearPermissionAudit: '권한 기록 지우기', clearSiteData: '사이트 데이터 지우기', clearSiteDataWarning: '선택한 프로필의 로그인, 쿠키 및 로컬 저장소를 지웁니다.', dataCleared: '브라우저 데이터를 지웠습니다', loadFailed: '내장 브라우저를 시작하지 못했습니다',
   },
   kanban: {
+    compact: {
+      table: "문제 목록",
+      full: "전체 보드",
+      active: "미완료",
+      all: "전체",
+      search: "문제 검색",
+      status: "상태",
+      count: "문제 {count}개",
+      project: "프로젝트",
+      issue: "문제",
+      gate: "남은 작업",
+      pr: "PR",
+      error: "문제를 불러올 수 없습니다.",
+      retry: "다시 시도",
+      loading: "문제 불러오는 중…",
+      unavailable: "일부 연결을 확인할 수 없어 기록을 개별 표시합니다.",
+      records: "기록 {count}개",
+      record: "기록 {index}",
+      empty: "일치하는 문제가 없습니다.",
+    },
+
     board: {
       defaultArchiveUnavailable: '기본 칸반은 보관할 수 없습니다',
     },

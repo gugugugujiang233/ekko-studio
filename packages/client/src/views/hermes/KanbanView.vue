@@ -10,6 +10,7 @@ import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import PatrolTable from '@/components/hermes/kanban/PatrolTable.vue'
 import KanbanTaskCard from '@/components/hermes/kanban/KanbanTaskCard.vue'
 import KanbanTaskDrawer from '@/components/hermes/kanban/KanbanTaskDrawer.vue'
 import KanbanCreateForm from '@/components/hermes/kanban/KanbanCreateForm.vue'
@@ -32,6 +33,9 @@ const dialog = useDialog()
 const kanbanStore = useKanbanStore()
 const profilesStore = useProfilesStore()
 
+const fullBoard = ref(false)
+const compactPatrol = computed(() => kanbanStore.selectedBoard === 'patrol' && !fullBoard.value)
+watch(() => kanbanStore.selectedBoard, () => { fullBoard.value = false; selectedTaskId.value = null })
 const showCreateForm = ref(false)
 const showCreateBoardForm = ref(false)
 const selectedTaskId = ref<string | null>(null)
@@ -86,7 +90,7 @@ function taskCountLabel(count: number): string {
 const boardOptions = computed(() => kanbanStore.activeBoards.map(board => {
   const count = typeof board.total === 'number' ? board.total : 0
   return {
-    label: `${t('kanban.title')}: ${board.icon ? `${board.icon} ` : ''}${board.name || board.slug} · ${taskCountLabel(count)}`,
+    label: compactPatrol.value ? (board.name || board.slug) : `${t('kanban.title')}: ${board.icon ? `${board.icon} ` : ''}${board.name || board.slug} · ${taskCountLabel(count)}`,
     value: board.slug,
   }
 }))
@@ -300,7 +304,7 @@ async function handleDispatch() {
 </script>
 
 <template>
-  <PageLoading :show="initializing || (kanbanStore.loading && kanbanStore.tasks.length === 0)" class="kanban-view">
+  <PageLoading :show="initializing || (!compactPatrol && kanbanStore.loading && kanbanStore.tasks.length === 0)" class="kanban-view">
     <PageHeader>
     <header class="page-header">
       <h2 class="header-title">{{ t('kanban.title') }}</h2>
@@ -312,7 +316,8 @@ async function handleDispatch() {
           size="small"
           class="board-select"
         />
-        <HeaderActionOverflow :label="t('chat.more')" :breakpoint="1100">
+        <NButton v-if="kanbanStore.selectedBoard === 'patrol'" size="small" @click="fullBoard = !fullBoard; selectedTaskId = null">{{ t(fullBoard ? 'kanban.compact.table' : 'kanban.compact.full') }}</NButton>
+        <HeaderActionOverflow v-if="!compactPatrol" :label="t('chat.more')" :breakpoint="1100">
           <NButton size="small" :loading="boardActionLoading" @click="showCreateBoardForm = true">
             {{ t('common.add') }}
           </NButton>
@@ -350,7 +355,7 @@ async function handleDispatch() {
             @update:value="handleApplyFilter"
           />
         </HeaderActionOverflow>
-        <NButton type="primary" size="small" @click="showCreateForm = true">
+        <NButton v-if="!compactPatrol" type="primary" size="small" @click="showCreateForm = true">
           <template #icon>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </template>
@@ -361,7 +366,7 @@ async function handleDispatch() {
     </PageHeader>
 
     <!-- Stats bar -->
-    <div v-if="kanbanStore.stats" class="stats-bar">
+    <div v-if="!compactPatrol && kanbanStore.stats" class="stats-bar">
       <button
         type="button"
         class="stat-chip total"
@@ -388,7 +393,8 @@ async function handleDispatch() {
     </div>
 
     <!-- Board -->
-    <div class="kanban-board-spin">
+    <PatrolTable v-if="compactPatrol" :board="kanbanStore.selectedBoard" :revision="kanbanStore.tasks" @open="handleTaskClick" @reset="handleDrawerClose" />
+    <div v-else class="kanban-board-spin">
       <div class="kanban-canvas">
         <VueFlow
           :key="kanbanCanvasKey"

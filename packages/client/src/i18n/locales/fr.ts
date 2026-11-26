@@ -397,6 +397,27 @@ export default {
     deleteProfileTitle: 'Supprimer le profil ?', deleteProfileWarning: 'Les données gérées seront placées dans la corbeille. Les dossiers personnalisés sont conservés.', clearCache: 'Vider le cache', clearPermissionAudit: 'Effacer le journal des autorisations', clearSiteData: 'Effacer les données des sites', clearSiteDataWarning: 'Efface les connexions, cookies et le stockage local du profil sélectionné.', dataCleared: 'Données du navigateur effacées', loadFailed: 'Impossible de démarrer le navigateur intégré',
   },
   kanban: {
+    compact: {
+      table: "Table des problèmes",
+      full: "Tableau complet",
+      active: "En cours",
+      all: "Tous",
+      search: "Rechercher un problème",
+      status: "État",
+      count: "{count} problèmes",
+      project: "Projet",
+      issue: "Problème",
+      gate: "Ce qui reste",
+      pr: "PR",
+      error: "Impossible de charger les problèmes.",
+      retry: "Réessayer",
+      loading: "Chargement des problèmes…",
+      unavailable: "Certains liens sont indisponibles ; les entrées restent séparées.",
+      records: "{count} entrées",
+      record: "Entrée {index}",
+      empty: "Aucun problème correspondant.",
+    },
+
     board: {
       defaultArchiveUnavailable: 'Le tableau par défaut ne peut pas être archivé',
     },

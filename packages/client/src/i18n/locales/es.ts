@@ -397,6 +397,27 @@ export default {
     deleteProfileTitle: '¿Eliminar perfil?', deleteProfileWarning: 'Los datos gestionados irán a la papelera. Los directorios personalizados se conservan.', clearCache: 'Borrar caché', clearPermissionAudit: 'Borrar registro de permisos', clearSiteData: 'Borrar datos de sitios', clearSiteDataWarning: 'Borra sesiones, cookies y almacenamiento local del perfil seleccionado.', dataCleared: 'Datos del navegador borrados', loadFailed: 'No se pudo iniciar el navegador integrado',
   },
   kanban: {
+    compact: {
+      table: "Tabla de problemas",
+      full: "Tablero completo",
+      active: "Pendientes",
+      all: "Todos",
+      search: "Buscar problemas",
+      status: "Estado",
+      count: "{count} problemas",
+      project: "Proyecto",
+      issue: "Problema",
+      gate: "Qué falta",
+      pr: "PR",
+      error: "No se pudieron cargar los problemas.",
+      retry: "Reintentar",
+      loading: "Cargando problemas…",
+      unavailable: "Algunos enlaces no están disponibles; los registros se mantienen separados.",
+      records: "{count} registros",
+      record: "Registro {index}",
+      empty: "No hay problemas coincidentes.",
+    },
+
     board: {
       defaultArchiveUnavailable: 'El tablero predeterminado no se puede archivar',
     },

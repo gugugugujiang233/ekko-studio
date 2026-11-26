@@ -397,6 +397,27 @@ export default {
     deleteProfileTitle: 'プロファイルを削除しますか？', deleteProfileWarning: '管理対象データはゴミ箱へ移動します。カスタムディレクトリは残ります。', clearCache: 'キャッシュを消去', clearPermissionAudit: '権限ログを消去', clearSiteData: 'サイトデータを消去', clearSiteDataWarning: '選択したプロファイルのログイン、Cookie、ローカルストレージを消去します。', dataCleared: 'ブラウザーデータを消去しました', loadFailed: '内蔵ブラウザーを起動できませんでした',
   },
   kanban: {
+    compact: {
+      table: "問題一覧",
+      full: "完全なボード",
+      active: "未完了",
+      all: "すべて",
+      search: "問題を検索",
+      status: "状態",
+      count: "{count} 件の問題",
+      project: "プロジェクト",
+      issue: "問題",
+      gate: "残りの作業",
+      pr: "PR",
+      error: "問題を読み込めませんでした。",
+      retry: "再試行",
+      loading: "問題を読み込み中…",
+      unavailable: "一部の関連情報を取得できないため、記録を個別に表示しています。",
+      records: "{count} 件の記録",
+      record: "記録 {index}",
+      empty: "一致する問題はありません。",
+    },
+
     board: {
       defaultArchiveUnavailable: 'デフォルトのカンバンはアーカイブできません',
     },
