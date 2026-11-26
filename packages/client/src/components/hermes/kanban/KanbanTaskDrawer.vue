@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { NSpin, NDrawer, NDrawerContent, NButton, NSelect, NInput, NModal, useDialog, useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -7,6 +7,7 @@ import { request } from '@/api/client'
 import { getAttachmentContentPath, getTask, listAttachments } from '@/api/hermes/kanban'
 import { useKanbanStore } from '@/stores/hermes/kanban'
 import { useFilesStore } from '@/stores/hermes/files'
+import { projectPatrolDetail } from '@/utils/hermes/patrol-detail'
 import { withDefaultAssignee } from '@/utils/hermes/kanban-assignees'
 import HistoryMessageList from '@/components/hermes/chat/HistoryMessageList.vue'
 import FilePreview from '@/components/hermes/files/FilePreview.vue'
@@ -18,6 +19,7 @@ const RUN_HISTORY_PAGE_SIZE = 10
 
 const props = defineProps<{
   taskId: string | null
+  compact?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -34,6 +36,19 @@ const kanbanStore = useKanbanStore()
 const filesStore = useFilesStore()
 
 const detail = ref<KanbanTaskDetail | null>(null)
+const showHistory = ref(false)
+const showReply = ref(false)
+let detailGeneration = 0
+onUnmounted(() => { detailGeneration++ })
+const compactDetail = computed(() => detail.value ? projectPatrolDetail(detail.value.task) : null)
+const showFullRecord = computed(() => !props.compact || showHistory.value)
+function toggleHistory() {
+  showHistory.value = !showHistory.value
+  showReply.value = false
+  showMessagesModal.value = false
+  commentBody.value = ''
+}
+watch(() => props.compact, () => { showHistory.value = false; showReply.value = false; commentBody.value = '' })
 const loading = ref(false)
 const assignProfile = ref<string | null>(null)
 const blockReason = ref('')
@@ -88,6 +103,8 @@ function isActiveTask(taskId: string, board: string): boolean {
 }
 
 function resetTaskScopedState() {
+  showHistory.value = false
+  showReply.value = false
   assignProfile.value = null
   blockReason.value = ''
   showBlockInput.value = false
@@ -186,7 +203,10 @@ const runHistoryRange = computed(() => {
 })
 
 watch(() => [props.taskId, kanbanStore.selectedBoard] as const, async ([id, board]) => {
+  const generation = ++detailGeneration
   resetTaskScopedState()
+  detail.value = null
+  loading.value = false
   if (!id) {
     detail.value = null
     return
@@ -197,20 +217,20 @@ watch(() => [props.taskId, kanbanStore.selectedBoard] as const, async ([id, boar
       getTask(id, { board }),
       listAttachments(id, { board }).catch(() => []),
     ])
-    if (isActiveTask(id, board)) {
+    if (generation === detailGeneration && isActiveTask(id, board)) {
       detail.value = nextDetail
       attachments.value = nextAttachments
     }
   } catch (err: any) {
-    if (isActiveTask(id, board)) {
+    if (generation === detailGeneration && isActiveTask(id, board)) {
       message.error(t('kanban.message.loadFailed'))
     }
   } finally {
-    if (isActiveTask(id, board)) {
+    if (generation === detailGeneration && isActiveTask(id, board)) {
       loading.value = false
     }
   }
-}, { immediate: true })
+}, { immediate: true, flush: 'sync' })
 
 watch(() => detail.value?.runs.length || 0, () => {
   if (runHistoryPage.value > runHistoryPageCount.value) {
@@ -340,19 +360,21 @@ async function handleAssign() {
 
 async function handleAddComment() {
   if (!props.taskId || !commentBody.value.trim()) return
+  const generation = detailGeneration
   const taskId = props.taskId
   const board = kanbanStore.selectedBoard
   try {
     await kanbanStore.addComment(taskId, commentBody.value.trim())
+    if (generation !== detailGeneration || !isActiveTask(taskId, board)) return
     const nextDetail = await getTask(taskId, { board })
-    if (isActiveTask(taskId, board)) {
+    if (generation === detailGeneration && isActiveTask(taskId, board)) {
       commentBody.value = ''
       detail.value = nextDetail
       message.success(t('kanban.message.commentAdded'))
     }
     emit('updated')
   } catch (err: any) {
-    if (isActiveTask(taskId, board)) message.error(err.message)
+    if (generation === detailGeneration && isActiveTask(taskId, board)) message.error(err.message)
   }
 }
 
@@ -442,9 +464,27 @@ function handleNavigateTask(taskId: string) {
 
 <template>
   <NDrawer :show="!!taskId" width="var(--studio-drawer-width)" placement="right" @update:show="(v: boolean) => { if (!v) emit('close') }">
-    <NDrawerContent :title="detail?.task.title || ''" closable>
+    <NDrawerContent :title="compact ? (detail ? compactDetail?.title || t('kanban.compactDetail.unknownIssue') : '') : detail?.task.title || ''" closable>
       <NSpin :show="loading">
         <template v-if="detail">
+          <section v-if="compact && compactDetail" class="compact-detail">
+            <div class="compact-overview"><span>{{ compactDetail.project || t('kanban.compactDetail.unknownProject') }}</span><span>{{ ['done', 'archived'].includes(detail.task.status) ? localizedTaskStatus : compactDetail.status }}</span></div>
+            <dl>
+              <dt>{{ t('kanban.compact.gate') }}</dt><dd>{{ compactDetail.gate || t('kanban.compactDetail.unknownGate') }}</dd>
+              <template v-if="compactDetail.treatment"><dt>{{ t('kanban.compactDetail.treatment') }}</dt><dd>{{ compactDetail.treatment }}</dd></template>
+              <template v-if="compactDetail.validation"><dt>{{ t('kanban.compactDetail.validation') }}</dt><dd>{{ compactDetail.validation }}</dd></template>
+            </dl>
+            <div v-if="compactDetail.refs.length || compactDetail.evidence.length" class="compact-links">
+              <a v-for="pr in compactDetail.refs" :key="pr.url" :href="pr.url" target="_blank" rel="noopener noreferrer">PR #{{ pr.number }}</a>
+              <a v-for="url in compactDetail.evidence" :key="url" :href="url" target="_blank" rel="noopener noreferrer">{{ t('kanban.compactDetail.evidence') }}</a>
+            </div>
+            <div class="compact-controls">
+              <NButton class="history-toggle" size="small" quaternary :aria-expanded="showHistory" @click="toggleHistory">{{ t(showHistory ? 'kanban.compactDetail.collapse' : 'kanban.compactDetail.history') }}</NButton>
+              <NButton v-if="canMutateTask && !showHistory" class="reply-toggle" size="small" quaternary :aria-expanded="showReply" @click="showReply = !showReply">{{ t('kanban.compactDetail.reply') }}</NButton>
+            </div>
+          </section>
+          <template v-if="showFullRecord">
+          <h3 v-if="compact" class="original-title">{{ detail.task.title }}</h3>
           <!-- Metadata -->
           <div class="detail-section">
             <div class="detail-row">
@@ -611,13 +651,7 @@ function handleNavigateTask(taskId: string) {
               <div class="comment-body">{{ comment.body }}</div>
             </div>
           </div>
-          <div v-if="canMutateTask" class="detail-section">
-            <div class="section-title">{{ t('kanban.detail.addComment') }}</div>
-            <div class="comment-input">
-              <NInput v-model:value="commentBody" type="textarea" :rows="3" :placeholder="t('kanban.detail.commentPlaceholder')" />
-              <NButton size="small" type="primary" :disabled="!commentBody.trim()" @click="handleAddComment">{{ t('common.add') }}</NButton>
-            </div>
-          </div>
+
 
           <div class="detail-section">
             <div class="section-title">{{ t('kanban.detail.operations') }}</div>
@@ -637,19 +671,28 @@ function handleNavigateTask(taskId: string) {
               <span class="event-time">{{ formatTime(event.created_at) }}</span>
             </div>
           </div>
+          </template>
+          <div v-if="canMutateTask && (showFullRecord || showReply)" class="detail-section">
+            <div class="section-title">{{ t('kanban.detail.addComment') }}</div>
+            <div class="comment-input">
+              <NInput v-model:value="commentBody" type="textarea" :rows="3" :placeholder="t('kanban.detail.commentPlaceholder')" />
+              <NButton size="small" type="primary" :disabled="!commentBody.trim()" @click="handleAddComment">{{ t('common.add') }}</NButton>
+            </div>
+          </div>
         </template>
       </NSpin>
     </NDrawerContent>
   </NDrawer>
 
   <!-- Session messages modal (click result summary) -->
-  <NModal v-if="historySession" :show="showMessagesModal" preset="card" :title="detail?.task.title || ''" :style="{ width: '900px', maxWidth: 'calc(100vw - 48px)' }" @close="showMessagesModal = false">
+  <NModal v-if="showFullRecord && historySession" :show="showMessagesModal" preset="card" :title="detail?.task.title || ''" :style="{ width: '900px', maxWidth: 'calc(100vw - 48px)' }" @close="showMessagesModal = false">
     <div class="messages-modal-body">
       <HistoryMessageList :session="historySession" scroll-scope="kanban" />
     </div>
   </NModal>
 
   <NModal
+    v-if="showFullRecord"
     :show="showAttachmentPreview"
     preset="card"
     :title="filesStore.previewFile?.name || ''"
@@ -663,6 +706,14 @@ function handleNavigateTask(taskId: string) {
 
 <style scoped lang="scss">
 @use '@/styles/variables' as *;
+
+.compact-detail { color: $text-primary; margin-bottom: 16px; }
+.compact-overview, .compact-links, .compact-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.compact-detail dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; margin: 16px 0; }
+.compact-detail dt { color: $text-secondary; }
+.compact-detail dd { margin: 0; overflow-wrap: anywhere; }
+.compact-links { margin-bottom: 12px; }
+.compact-links a { color: $accent-primary; }
 
 .detail-section {
   margin-bottom: 20px;

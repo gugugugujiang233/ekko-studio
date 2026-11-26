@@ -7,6 +7,9 @@ const routeState = vi.hoisted(() => ({
   query: { board: 'project-a' } as Record<string, string>,
 }))
 
+vi.mock('@/api/client', () => ({ getActiveProfileName: () => 'main', getApiKey: () => '', getBaseUrlValue: () => '' }))
+vi.mock('@/api/hermes/kanban', () => ({ listTasks: async () => [{ id: 'business', status: 'review', title: 'Old verbose title', body: '项目：Example\n看板问题：登录后页面空白\n还差：负责人确认' }], getTask: vi.fn() }))
+
 const routerReplace = vi.hoisted(() => vi.fn())
 
 const storeState = vi.hoisted(() => ({
@@ -90,7 +93,7 @@ vi.mock('@/components/hermes/kanban/KanbanTaskCard.vue', () => ({
 vi.mock('@/components/hermes/kanban/KanbanTaskDrawer.vue', () => ({
   default: defineComponent({
     name: 'KanbanTaskDrawer',
-    props: { taskId: { type: String, required: false } },
+    props: { taskId: { type: String, required: false }, compact: Boolean },
     emits: ['updated', 'close'],
     template: '<button class="drawer-updated" :data-task-id="taskId || null" @click="$emit(\'updated\')">drawer</button>',
   }),
@@ -171,7 +174,7 @@ vi.mock('naive-ui', () => ({
   }),
   NInput: defineComponent({
     name: 'NInput',
-    props: { value: { type: String, default: '' }, placeholder: { type: String, required: false } },
+    props: { size: String, value: { type: String, default: '' }, placeholder: { type: String, required: false } },
     emits: ['update:value'],
     template: '<input class="n-input-stub" :placeholder="placeholder" :value="value" @input="$emit(\'update:value\', $event.target.value)" />',
   }),
@@ -238,6 +241,28 @@ describe('KanbanView', () => {
       configurable: true,
       get: () => 'visible',
     })
+  })
+
+  it('mounts the compact table on the actual patrol route and keeps legacy controls behind the toggle', async () => {
+    routeState.query = { board: 'patrol' }
+    storeState.selectedBoard = 'patrol'
+    storeState.filterStatus = 'done'
+    storeState.filterAssignee = 'someone'
+    const wrapper = mount(KanbanView)
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'KanbanTaskDrawer' }).props('compact')).toBe(true)
+    expect(wrapper.find('.patrol-table').exists()).toBe(true)
+    expect(wrapper.find('.vue-flow-stub').exists()).toBe(false)
+    expect(wrapper.find('.stats-bar').exists()).toBe(false)
+    expect(wrapper.text()).toContain('登录后页面空白')
+    await wrapper.find('.patrol-issue').trigger('click')
+    expect(wrapper.find('.drawer-updated').attributes('data-task-id')).toBe('business')
+    const toggle = wrapper.findAll('.n-button-stub').find(node => node.text() === 'kanban.compact.full')!
+    await toggle.trigger('click')
+    expect(wrapper.find('.vue-flow-stub').exists()).toBe(true)
+    expect(wrapper.getComponent({ name: 'KanbanTaskDrawer' }).props('compact')).toBe(false)
+    expect(wrapper.find('.patrol-table').exists()).toBe(false)
+    wrapper.unmount()
   })
 
   it('initializes board from route query and refreshes stats alongside tasks', async () => {

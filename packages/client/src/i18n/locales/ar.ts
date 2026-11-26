@@ -1755,6 +1755,38 @@ export default {
 
   // Kanban
   kanban: {
+    compactDetail: {
+      history: "السجل والتفاصيل التقنية",
+      collapse: "إخفاء السجل",
+      reply: "ترك تعليق",
+      treatment: "المعالجة",
+      validation: "التحقق",
+      evidence: "دليل APM الأصلي",
+      unknownIssue: "ملخص المشكلة غير متاح",
+      unknownProject: "المشروع غير مؤكد",
+      unknownGate: "الخطوة التالية غير مؤكدة",
+    },
+    compact: {
+      table: "جدول المشكلات",
+      full: "اللوحة الكاملة",
+      active: "غير المكتملة",
+      all: "الكل",
+      search: "البحث عن مشكلات",
+      status: "الحالة",
+      count: "{count} مشكلات",
+      project: "المشروع",
+      issue: "المشكلة",
+      gate: "ما المتبقي",
+      pr: "PR",
+      error: "تعذر تحميل المشكلات.",
+      retry: "إعادة المحاولة",
+      loading: "جارٍ تحميل المشكلات…",
+      unavailable: "بعض الروابط غير متاحة؛ تبقى السجلات منفصلة.",
+      records: "{count} سجلات",
+      record: "السجل {index}",
+      empty: "لا توجد مشكلات مطابقة.",
+    },
+
     title: 'لوحة كانبان',
     createTask: 'مهمة جديدة',
     noTasks: 'لا توجد مهام',

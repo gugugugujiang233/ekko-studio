@@ -1716,6 +1716,38 @@ export default {
 
   // Kanban
   kanban: {
+    compactDetail: {
+      history: "History and technical records",
+      collapse: "Hide history",
+      reply: "Leave a comment",
+      treatment: "Treatment",
+      validation: "Verification",
+      evidence: "Original APM evidence",
+      unknownIssue: "Issue summary unavailable",
+      unknownProject: "Project unconfirmed",
+      unknownGate: "Next step unconfirmed",
+    },
+    compact: {
+      table: "Issue table",
+      full: "Full board",
+      active: "Active",
+      all: "All",
+      search: "Search issues",
+      status: "Status",
+      count: "{count} issues",
+      project: "Project",
+      issue: "Issue",
+      gate: "What remains",
+      pr: "PR",
+      error: "Unable to load issues.",
+      retry: "Retry",
+      loading: "Loading issues…",
+      unavailable: "Some links are unavailable; records remain separate.",
+      records: "{count} records",
+      record: "Record {index}",
+      empty: "No matching issues.",
+    },
+
     title: 'Kanban Board',
     createTask: 'New Task',
     noTasks: 'No tasks',

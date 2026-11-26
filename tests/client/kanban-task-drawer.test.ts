@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, reactive } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
 
 const mockGetTask = vi.hoisted(() => vi.fn())
@@ -69,7 +69,7 @@ vi.mock('@/components/hermes/files/FilePreview.vue', () => ({
 }))
 
 vi.mock('@/stores/hermes/kanban', () => ({
-  useKanbanStore: () => ({
+  useKanbanStore: () => reactive({
     selectedBoard: 'project-a',
     assignees: [{ name: 'alice', counts: { todo: 1 } }, { name: 'bob', counts: { ready: 1 } }],
     completeTasks: mockCompleteTasks,
@@ -550,4 +550,128 @@ describe('KanbanTaskDrawer', () => {
     await flushPromises()
     expect(mockAssignTask).toHaveBeenCalledWith('task-4', 'bob')
   })
+  function compactFixture(id = 'compact-task', status = 'review') {
+    return {
+      task: { id, title: '【待确认】Example｜PR #8 原始长标题 HEAD abcdef123456; P50 old metadata',
+        body: '项目：Example\n看板问题：登录后页面空白 <img src=x onerror=alert(1)>\n还差：等待负责人确认\n处理：修复已提交，尚未上线\n验证：本地通过，生产尚未验证\nPR：[当前提案 OPEN](https://github.com/example/app/pull/8)\nAPM：[证据](https://example.com/apm/event)\n<details>OLD-HISTORY-' + 'x'.repeat(50000) + '</details>',
+        status, assignee: 'private-role', priority: 50, created_at: 100, result: 'RAW-RESULT', tenant: 'private-tenant' },
+      latest_summary: 'RAW-LATEST session-uuid abcdef123456',
+      parents: ['raw-parent-id'], children: ['raw-child-id'],
+      comments: [{ id: 1, author: 'private-author', body: 'GIANT-COMMENT', created_at: 100 }],
+      runs: [{ id: 1, profile: 'private-runner', status: 'done', summary: 'RAW-RUN', started_at: 100 }],
+      events: [{ id: 1, kind: 'RAW-EVENT', created_at: 100 }],
+    }
+  }
+
+  it('keeps the compact default DOM concise and reveals the unchanged original record only on request', async () => {
+    const record = compactFixture()
+    mockGetTask.mockResolvedValue(record)
+    const wrapper = mount(KanbanTaskDrawer, { props: { taskId: record.task.id, compact: true } })
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'NDrawerContent' }).props('title')).toBe('登录后页面空白')
+    expect(wrapper.text()).toContain('等待负责人确认')
+    expect(wrapper.text()).toContain('本地通过，生产尚未验证')
+    expect(wrapper.find('img').exists()).toBe(false)
+    expect(wrapper.findAll('.compact-links a').map(a => a.attributes('href'))).toEqual(['https://github.com/example/app/pull/8', 'https://example.com/apm/event'])
+    const raw = ['OLD-HISTORY-', 'RAW-RESULT', 'RAW-LATEST', 'GIANT-COMMENT', 'RAW-RUN', 'RAW-EVENT', 'private-role', 'raw-parent-id', 'raw-child-id', 'abcdef123456', 'P50', record.task.id]
+    for (const text of raw) expect(wrapper.html()).not.toContain(text)
+    expect(wrapper.find('.detail-body').exists()).toBe(false)
+    expect(wrapper.find('.run-item').exists()).toBe(false)
+    expect(wrapper.text().length).toBeLessThan(600)
+    await wrapper.get('.history-toggle').trigger('click')
+    expect(wrapper.get('.detail-body').text()).toBe(record.task.body)
+    for (const text of raw.filter(text => text !== 'RAW-LATEST')) expect(wrapper.html()).toContain(text)
+    expect(wrapper.get('.history-toggle').text()).toBe('kanban.compactDetail.collapse')
+    await wrapper.get('.history-toggle').trigger('click')
+    for (const text of raw) expect(wrapper.html()).not.toContain(text)
+    expect(mockCompleteTasks).not.toHaveBeenCalled()
+    expect(mockAddComment).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('retains the original comment method with a single opt-in composer', async () => {
+    const record = compactFixture()
+    mockGetTask.mockResolvedValue(record)
+    const wrapper = mount(KanbanTaskDrawer, { props: { taskId: record.task.id, compact: true } })
+    await flushPromises()
+    expect(wrapper.find('.comment-input').exists()).toBe(false)
+    await wrapper.get('.reply-toggle').trigger('click')
+    await wrapper.get('.comment-input input').setValue('Please review')
+    await wrapper.get('.comment-input button').trigger('click')
+    await flushPromises()
+    expect(mockAddComment).toHaveBeenCalledExactlyOnceWith(record.task.id, 'Please review')
+    expect(wrapper.get('.comment-input input').element.value).toBe('')
+    expect(wrapper.find('.comment-item').exists()).toBe(false)
+    await wrapper.get('.history-toggle').trigger('click')
+    expect(wrapper.findAll('.comment-input')).toHaveLength(1)
+    wrapper.unmount()
+  })
+
+  it('clears history, reply and previous detail during task changes and rejects old responses including A-B-A', async () => {
+    const record = compactFixture('a')
+    mockGetTask.mockResolvedValue(record)
+    const wrapper = mount(KanbanTaskDrawer, { props: { taskId: 'a', compact: true } })
+    await flushPromises()
+    await wrapper.get('.history-toggle').trigger('click')
+    let resolveB!: (value: unknown) => void
+    let resolveA!: (value: unknown) => void
+    mockGetTask.mockReturnValueOnce(new Promise(resolve => { resolveB = resolve }))
+    await wrapper.setProps({ taskId: 'b' })
+    expect(wrapper.text()).not.toContain('OLD-HISTORY-')
+    expect(wrapper.find('.detail-body').exists()).toBe(false)
+    mockGetTask.mockReturnValueOnce(new Promise(resolve => { resolveA = resolve }))
+    await wrapper.setProps({ taskId: 'a' })
+    resolveB(compactFixture('b')); await flushPromises()
+    expect(wrapper.find('.compact-detail').exists()).toBe(false)
+    resolveA(record); await flushPromises()
+    expect(wrapper.get('.history-toggle').text()).toBe('kanban.compactDetail.history')
+    await wrapper.get('.reply-toggle').trigger('click')
+    await wrapper.get('.comment-input input').setValue('Unsent draft')
+    mockGetTask.mockResolvedValue(compactFixture('c'))
+    await wrapper.setProps({ taskId: 'c' }); await flushPromises()
+    expect(wrapper.find('.comment-input').exists()).toBe(false)
+    await wrapper.get('.reply-toggle').trigger('click')
+    expect(wrapper.get('.comment-input input').element.value).toBe('')
+    wrapper.unmount()
+  })
+
+  it('uses native terminal status and no obsolete gate, and leaves full mode unchanged', async () => {
+    const record = compactFixture('done-task', 'done')
+    record.task.body = '项目：Example\n看板问题：已修复问题\n还差：新PR待创建\n<details>old</details>'
+    mockGetTask.mockResolvedValue(record)
+    const wrapper = mount(KanbanTaskDrawer, { props: { taskId: record.task.id, compact: true } })
+    await flushPromises()
+    expect(wrapper.text()).toContain('kanban.columns.done')
+    expect(wrapper.get('.compact-detail dd').text()).toBe('—')
+    expect(wrapper.text()).not.toContain('新PR待创建')
+    await wrapper.setProps({ compact: false })
+    expect(wrapper.getComponent({ name: 'NDrawerContent' }).props('title')).toBe(record.task.title)
+    expect(wrapper.get('.detail-body').text()).toBe(record.task.body)
+    expect(wrapper.text()).toContain('RAW-RUN')
+    wrapper.unmount()
+  })
+
+  it('resets expansion and reply on board changes and never applies the first A response after A-B-A', async () => {
+    let firstA!: (value: unknown) => void
+    mockGetTask.mockReturnValueOnce(new Promise(resolve => { firstA = resolve }))
+    const wrapper = mount(KanbanTaskDrawer, { props: { taskId: 'a', compact: true } })
+    mockGetTask.mockResolvedValue(compactFixture('b'))
+    await wrapper.setProps({ taskId: 'b' }); await flushPromises()
+    mockGetTask.mockResolvedValue(compactFixture('a'))
+    await wrapper.setProps({ taskId: 'a' }); await flushPromises()
+    const stale = compactFixture('a')
+    stale.task.body = '项目：Stale\n看板问题：STALE-A-RESPONSE'
+    firstA(stale); await flushPromises()
+    expect(wrapper.text()).not.toContain('STALE-A-RESPONSE')
+    expect(wrapper.getComponent({ name: 'NDrawerContent' }).props('title')).toBe('登录后页面空白')
+    await wrapper.get('.history-toggle').trigger('click')
+    mockGetTask.mockResolvedValue(compactFixture('a'))
+    ;(wrapper.vm as any).kanbanStore.selectedBoard = 'another-board'
+    await flushPromises()
+    expect(mockGetTask).toHaveBeenLastCalledWith('a', { board: 'another-board' })
+    expect(wrapper.get('.history-toggle').text()).toBe('kanban.compactDetail.history')
+    expect(wrapper.find('.detail-body').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
 })

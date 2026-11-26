@@ -1762,6 +1762,38 @@ export default {
 
   // 看板
   kanban: {
+    compactDetail: {
+      history: "历史与技术记录",
+      collapse: "收起历史记录",
+      reply: "留言",
+      treatment: "处理",
+      validation: "验证",
+      evidence: "原始 APM 证据",
+      unknownIssue: "待补充问题摘要",
+      unknownProject: "待确认项目",
+      unknownGate: "待确认下一步",
+    },
+    compact: {
+      table: "问题表格",
+      full: "完整看板",
+      active: "未完成",
+      all: "全部",
+      search: "搜索问题",
+      status: "状态",
+      count: "{count} 个问题",
+      project: "项目",
+      issue: "问题",
+      gate: "还差什么",
+      pr: "PR",
+      error: "问题加载失败。",
+      retry: "重试",
+      loading: "正在加载问题…",
+      unavailable: "部分关联暂不可用，相关记录保持独立。",
+      records: "{count} 条原始记录",
+      record: "原始记录 {index}",
+      empty: "没有符合条件的问题。",
+    },
+
     title: '看板',
     createTask: '新建任务',
     noTasks: '暂无任务',
