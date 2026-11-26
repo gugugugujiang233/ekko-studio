@@ -397,6 +397,17 @@ export default {
     deleteProfileTitle: 'プロファイルを削除しますか？', deleteProfileWarning: '管理対象データはゴミ箱へ移動します。カスタムディレクトリは残ります。', clearCache: 'キャッシュを消去', clearPermissionAudit: '権限ログを消去', clearSiteData: 'サイトデータを消去', clearSiteDataWarning: '選択したプロファイルのログイン、Cookie、ローカルストレージを消去します。', dataCleared: 'ブラウザーデータを消去しました', loadFailed: '内蔵ブラウザーを起動できませんでした',
   },
   kanban: {
+    compactDetail: {
+      history: "履歴と技術記録",
+      collapse: "履歴を閉じる",
+      reply: "コメント",
+      treatment: "対応",
+      validation: "検証",
+      evidence: "元の APM 証拠",
+      unknownIssue: "問題の概要は未記入",
+      unknownProject: "プロジェクト未確認",
+      unknownGate: "次の手順は未確認",
+    },
     compact: {
       table: "問題一覧",
       full: "完全なボード",

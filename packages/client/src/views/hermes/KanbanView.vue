@@ -444,6 +444,7 @@ async function handleDispatch() {
 
     <!-- Task detail drawer -->
     <KanbanTaskDrawer
+      :compact="compactPatrol"
       :task-id="selectedTaskId"
       @close="handleDrawerClose"
       @updated="handleDrawerUpdated"

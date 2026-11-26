@@ -397,6 +397,17 @@ export default {
     deleteProfileTitle: 'Browserprofil löschen?', deleteProfileWarning: 'Verwaltete Daten werden in den Papierkorb verschoben. Benutzerdefinierte Ordner bleiben erhalten.', clearCache: 'Cache leeren', clearPermissionAudit: 'Berechtigungsprotokoll leeren', clearSiteData: 'Websitedaten löschen', clearSiteDataWarning: 'Löscht Anmeldungen, Cookies und lokalen Speicher des gewählten Profils.', dataCleared: 'Browserdaten gelöscht', loadFailed: 'Der eingebettete Browser konnte nicht gestartet werden',
   },
   kanban: {
+    compactDetail: {
+      history: "Verlauf und technische Aufzeichnungen",
+      collapse: "Verlauf ausblenden",
+      reply: "Kommentieren",
+      treatment: "Bearbeitung",
+      validation: "Überprüfung",
+      evidence: "Originaler APM-Nachweis",
+      unknownIssue: "Problemzusammenfassung fehlt",
+      unknownProject: "Projekt unbestätigt",
+      unknownGate: "Nächster Schritt unbestätigt",
+    },
     compact: {
       table: "Problemtabelle",
       full: "Vollständiges Board",

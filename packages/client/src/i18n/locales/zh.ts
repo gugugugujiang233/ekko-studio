@@ -1762,6 +1762,17 @@ export default {
 
   // 看板
   kanban: {
+    compactDetail: {
+      history: "历史与技术记录",
+      collapse: "收起历史记录",
+      reply: "留言",
+      treatment: "处理",
+      validation: "验证",
+      evidence: "原始 APM 证据",
+      unknownIssue: "待补充问题摘要",
+      unknownProject: "待确认项目",
+      unknownGate: "待确认下一步",
+    },
     compact: {
       table: "问题表格",
       full: "完整看板",

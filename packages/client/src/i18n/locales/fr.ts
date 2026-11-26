@@ -397,6 +397,17 @@ export default {
     deleteProfileTitle: 'Supprimer le profil ?', deleteProfileWarning: 'Les données gérées seront placées dans la corbeille. Les dossiers personnalisés sont conservés.', clearCache: 'Vider le cache', clearPermissionAudit: 'Effacer le journal des autorisations', clearSiteData: 'Effacer les données des sites', clearSiteDataWarning: 'Efface les connexions, cookies et le stockage local du profil sélectionné.', dataCleared: 'Données du navigateur effacées', loadFailed: 'Impossible de démarrer le navigateur intégré',
   },
   kanban: {
+    compactDetail: {
+      history: "Historique et données techniques",
+      collapse: "Masquer l’historique",
+      reply: "Commenter",
+      treatment: "Traitement",
+      validation: "Vérification",
+      evidence: "Preuve APM originale",
+      unknownIssue: "Résumé du problème indisponible",
+      unknownProject: "Projet non confirmé",
+      unknownGate: "Prochaine étape à confirmer",
+    },
     compact: {
       table: "Table des problèmes",
       full: "Tableau complet",

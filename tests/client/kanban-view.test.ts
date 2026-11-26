@@ -93,7 +93,7 @@ vi.mock('@/components/hermes/kanban/KanbanTaskCard.vue', () => ({
 vi.mock('@/components/hermes/kanban/KanbanTaskDrawer.vue', () => ({
   default: defineComponent({
     name: 'KanbanTaskDrawer',
-    props: { taskId: { type: String, required: false } },
+    props: { taskId: { type: String, required: false }, compact: Boolean },
     emits: ['updated', 'close'],
     template: '<button class="drawer-updated" :data-task-id="taskId || null" @click="$emit(\'updated\')">drawer</button>',
   }),
@@ -250,6 +250,7 @@ describe('KanbanView', () => {
     storeState.filterAssignee = 'someone'
     const wrapper = mount(KanbanView)
     await flushPromises()
+    expect(wrapper.getComponent({ name: 'KanbanTaskDrawer' }).props('compact')).toBe(true)
     expect(wrapper.find('.patrol-table').exists()).toBe(true)
     expect(wrapper.find('.vue-flow-stub').exists()).toBe(false)
     expect(wrapper.find('.stats-bar').exists()).toBe(false)
@@ -259,6 +260,7 @@ describe('KanbanView', () => {
     const toggle = wrapper.findAll('.n-button-stub').find(node => node.text() === 'kanban.compact.full')!
     await toggle.trigger('click')
     expect(wrapper.find('.vue-flow-stub').exists()).toBe(true)
+    expect(wrapper.getComponent({ name: 'KanbanTaskDrawer' }).props('compact')).toBe(false)
     expect(wrapper.find('.patrol-table').exists()).toBe(false)
     wrapper.unmount()
   })

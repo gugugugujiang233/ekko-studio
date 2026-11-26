@@ -1616,6 +1616,17 @@ export default {
 
 
   kanban: {
+    compactDetail: {
+      history: "История и технические записи",
+      collapse: "Скрыть историю",
+      reply: "Оставить комментарий",
+      treatment: "Обработка",
+      validation: "Проверка",
+      evidence: "Исходные данные APM",
+      unknownIssue: "Нет краткого описания проблемы",
+      unknownProject: "Проект не подтверждён",
+      unknownGate: "Следующий шаг не подтверждён",
+    },
     compact: {
       table: "Таблица проблем",
       full: "Полная доска",

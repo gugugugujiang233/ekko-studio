@@ -1716,6 +1716,17 @@ export default {
 
   // Kanban
   kanban: {
+    compactDetail: {
+      history: "History and technical records",
+      collapse: "Hide history",
+      reply: "Leave a comment",
+      treatment: "Treatment",
+      validation: "Verification",
+      evidence: "Original APM evidence",
+      unknownIssue: "Issue summary unavailable",
+      unknownProject: "Project unconfirmed",
+      unknownGate: "Next step unconfirmed",
+    },
     compact: {
       table: "Issue table",
       full: "Full board",

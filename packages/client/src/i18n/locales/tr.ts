@@ -828,6 +828,17 @@ export default {
     restoreModelsFailed: 'Önceki model listesi geri yüklenemedi',
   },
   kanban: {
+    compactDetail: {
+      history: "Geçmiş ve teknik kayıtlar",
+      collapse: "Geçmişi gizle",
+      reply: "Yorum yap",
+      treatment: "İşlem",
+      validation: "Doğrulama",
+      evidence: "Özgün APM kanıtı",
+      unknownIssue: "Sorun özeti mevcut değil",
+      unknownProject: "Proje doğrulanmadı",
+      unknownGate: "Sonraki adım doğrulanmadı",
+    },
     compact: {
       table: "Sorun tablosu",
       full: "Tam pano",

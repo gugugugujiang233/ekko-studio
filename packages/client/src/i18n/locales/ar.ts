@@ -1755,6 +1755,17 @@ export default {
 
   // Kanban
   kanban: {
+    compactDetail: {
+      history: "السجل والتفاصيل التقنية",
+      collapse: "إخفاء السجل",
+      reply: "ترك تعليق",
+      treatment: "المعالجة",
+      validation: "التحقق",
+      evidence: "دليل APM الأصلي",
+      unknownIssue: "ملخص المشكلة غير متاح",
+      unknownProject: "المشروع غير مؤكد",
+      unknownGate: "الخطوة التالية غير مؤكدة",
+    },
     compact: {
       table: "جدول المشكلات",
       full: "اللوحة الكاملة",

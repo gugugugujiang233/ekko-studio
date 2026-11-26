@@ -397,6 +397,17 @@ export default {
     deleteProfileTitle: '프로필을 삭제할까요?', deleteProfileWarning: '관리 데이터는 휴지통으로 이동하며 사용자 지정 경로는 유지됩니다.', clearCache: '캐시 지우기', clearPermissionAudit: '권한 기록 지우기', clearSiteData: '사이트 데이터 지우기', clearSiteDataWarning: '선택한 프로필의 로그인, 쿠키 및 로컬 저장소를 지웁니다.', dataCleared: '브라우저 데이터를 지웠습니다', loadFailed: '내장 브라우저를 시작하지 못했습니다',
   },
   kanban: {
+    compactDetail: {
+      history: "이력 및 기술 기록",
+      collapse: "이력 접기",
+      reply: "댓글 남기기",
+      treatment: "처리",
+      validation: "검증",
+      evidence: "원본 APM 증거",
+      unknownIssue: "문제 요약 없음",
+      unknownProject: "프로젝트 미확인",
+      unknownGate: "다음 단계 미확인",
+    },
     compact: {
       table: "문제 목록",
       full: "전체 보드",
